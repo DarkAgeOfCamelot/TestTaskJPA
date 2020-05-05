@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres:12
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: lheblrfyfk
+      PGDATA: /data/postgres
+    volumes:
+       - postgres:/data/postgres
+       - ./init.sql:/docker-entrypoint-initdb.d/1-init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  server:
+    build: ./
+    network_mode: host
+    ports:
+      - 8080:8080
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    postgres:
