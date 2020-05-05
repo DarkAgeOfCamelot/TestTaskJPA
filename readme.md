@@ -22,3 +22,12 @@
 10. для web сервиса должен быть написан Dockerfile 
 
 11. должен быть написан docker-compose.yml , который запускает сам сервис и БД для него.
+<br>
+<br>
+<p><b>Создание контейнера Docker</b>
+
+ docker build j_testTask/
+
+ docker run --net=host --name TestTaskContainer <image id>
+</p>
+

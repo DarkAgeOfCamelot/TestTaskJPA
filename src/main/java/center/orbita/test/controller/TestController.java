@@ -1,11 +1,8 @@
 package center.orbita.test.controller;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import center.orbita.test.counterdb.ReadCounter;
@@ -14,7 +11,6 @@ import center.orbita.test.model.TestCounter;
 @RestController
 public class TestController {
 
-    private final AtomicLong counter = new AtomicLong();
     @Autowired
     ReadCounter readCouner;
     

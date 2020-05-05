@@ -13,6 +13,13 @@ import org.springframework.stereotype.Service;
 
 import center.orbita.test.configs.DatabaseConfig;
 
+/*
+ * Класс для работы с БД
+ * Подключение к БД
+ * Работа с таблицей счетчика test.counter
+ * 
+ */
+
 @Service
 public class ReadCounter {
 	private static final Logger logger = LogManager.getLogger(ReadCounter.class);
@@ -22,7 +29,7 @@ public class ReadCounter {
 	@Autowired
 	DatabaseConfig db;
 	
-	
+	// - Инициализация подключения к БД
 	@Autowired
 	private void init() {
 		try {
@@ -38,6 +45,7 @@ public class ReadCounter {
 		}
 	}
 	
+	// - Получение текущего значения счетчика для  GET-запроса
 	public synchronized long getMaxCounter() {
 		
 		String SQLtext = "SELECT counter FROM test.counter WHERE counter = (SELECT MAX(counter) FROM test.counter)";
@@ -47,7 +55,6 @@ public class ReadCounter {
 			ResultSet rs = null;
 			Statement sp1 = conn.createStatement();
 			sts_sp = sp1.execute(SQLtext);
-			logger.info("boolean sts_sp = " + sts_sp);
 			
 			if (sts_sp) {
 				rs = sp1.getResultSet();
@@ -55,6 +62,7 @@ public class ReadCounter {
 					result = rs.getLong(1);
 				}
 				rs.close();
+				logger.info("Current count = "+result);
 			}
 			sp1.close();
 		} catch (SQLException e) {
@@ -71,41 +79,39 @@ public class ReadCounter {
 		return result;
 	}
 	
+	// - обнуление и получение значения счетчика для DELETE - запроса
 	public synchronized long zeroingCounterAndGet() {
 		
 		String SQLtext = "UPDATE test.counter SET counter=0, timestamp_upd=current_timestamp WHERE counter = (SELECT MAX(counter) FROM test.counter)";
-		int sts_sp = 0;
 		
 		try {
 			Statement sp1 = conn.createStatement();
-			sts_sp = sp1.executeUpdate(SQLtext);
-			logger.info("Update rc = " + sts_sp);
-			
+			sp1.executeUpdate(SQLtext);
+			logger.info("Zeroing is successfully");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			logger.error("SQL Error! "+e.getLocalizedMessage());
+			logger.error("Update Zeroing Error! "+e.getLocalizedMessage());
 			e.printStackTrace();
 		} 
-
+		
 		return getMaxCounter();
 	}
 	
-	
+	// - Увеличение счетчика на единицу и полчение значения для POST-запроса
 	public synchronized long incrementCounterAndGet() {
 		
 		String SQLtext = "UPDATE test.counter SET counter=(SELECT MAX(counter)+1 FROM test.counter), "
 				+ "timestamp_upd=current_timestamp "
 				+ "WHERE counter = (SELECT MAX(counter) FROM test.counter)";
-		int sts_sp = 0;
 		
 		try {
 			Statement sp1 = conn.createStatement();
-			sts_sp = sp1.executeUpdate(SQLtext);
-			logger.info("Update rc = " + sts_sp);
+			sp1.executeUpdate(SQLtext);
+			logger.info("Updated increment" );
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			logger.error("SQL Error! "+e.getLocalizedMessage());
+			logger.error("Update increment Error! "+e.getLocalizedMessage());
 			e.printStackTrace();
 		} 
 

@@ -17,7 +17,7 @@ import org.springframework.jndi.JndiObjectFactoryBean;
 
 //
 //	КЛАСС ДЛЯ ВСТРОЕННОГО В SPRING-BOOT TOMCAT
-//	НЕ ИСПОЛЬЗУЕТСЯ ПРИ РАЗВЕРТЫВАНИИ ВО ВНЕШНЕМ TOMCAT	
+//	Создание ресурса подключения к БД "jdbc/postgresmain"	
 //
 
 @Configuration
