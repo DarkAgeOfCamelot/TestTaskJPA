@@ -30,14 +30,12 @@ public class ReadCounter {
 	DatabaseConfig db;
 	
 	// - Инициализация подключения к БД
-	@Autowired
+	// На каждый запрос (отдельная нить) отдельный коннект
 	private void init() {
 		try {
 			conn = db.dataSource().getConnection();
 			logger.info("Connected: " + conn.getCatalog());
 			stmt = conn.createStatement();
-			logger.info("Stmt: "+ stmt.toString());
-			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			logger.error("SQL Error! "+e.getLocalizedMessage());
@@ -47,8 +45,9 @@ public class ReadCounter {
 	
 	// - Получение текущего значения счетчика для  GET-запроса
 	public synchronized long getMaxCounter() {
-		
-		String SQLtext = "SELECT counter FROM test.counter WHERE counter = (SELECT MAX(counter) FROM test.counter)";
+		init();
+		final String SQLtext = "SELECT counter FROM test.counter "
+				+ "WHERE counter = (SELECT MAX(counter) FROM test.counter)";
 		boolean sts_sp = false;
 		long result=0;
 		try {
@@ -69,20 +68,21 @@ public class ReadCounter {
 			// TODO Auto-generated catch block
 			logger.error("SQL Error! "+e.getLocalizedMessage());
 			e.printStackTrace();
-		} 
-//		finally {
-//			if (conn != null)	try {
-//				//conn.commit();
-//				conn.close();
-//			} catch(SQLException e) { logger.error("Error: ", e); }
-//		}
+		} finally {
+			if (conn != null)	try {
+				//conn.commit();
+				stmt.close();
+				conn.close();
+			} catch(SQLException e) { logger.error("Error close connect: ", e); }
+		}
 		return result;
 	}
 	
 	// - обнуление и получение значения счетчика для DELETE - запроса
 	public synchronized long zeroingCounterAndGet() {
-		
-		String SQLtext = "UPDATE test.counter SET counter=0, timestamp_upd=current_timestamp WHERE counter = (SELECT MAX(counter) FROM test.counter)";
+		init();
+		final String SQLtext = "UPDATE test.counter SET counter=0, timestamp_upd=current_timestamp "
+				+ "WHERE counter = (SELECT MAX(counter) FROM test.counter)";
 		
 		try {
 			Statement sp1 = conn.createStatement();
@@ -92,15 +92,20 @@ public class ReadCounter {
 			// TODO Auto-generated catch block
 			logger.error("Update Zeroing Error! "+e.getLocalizedMessage());
 			e.printStackTrace();
-		} 
+		} finally {
+			if (conn != null)	try {
+				stmt.close();
+				conn.close();
+			} catch(SQLException e) { logger.error("Error close connect: ", e); }
+		}
 		
 		return getMaxCounter();
 	}
 	
 	// - Увеличение счетчика на единицу и полчение значения для POST-запроса
 	public synchronized long incrementCounterAndGet() {
-		
-		String SQLtext = "UPDATE test.counter SET counter=(SELECT MAX(counter)+1 FROM test.counter), "
+		init();
+		final String SQLtext = "UPDATE test.counter SET counter=(SELECT MAX(counter)+1 FROM test.counter), "
 				+ "timestamp_upd=current_timestamp "
 				+ "WHERE counter = (SELECT MAX(counter) FROM test.counter)";
 		
@@ -113,7 +118,12 @@ public class ReadCounter {
 			// TODO Auto-generated catch block
 			logger.error("Update increment Error! "+e.getLocalizedMessage());
 			e.printStackTrace();
-		} 
+		} finally {
+			if (conn != null)	try {
+				stmt.close();
+				conn.close();
+			} catch(SQLException e) { logger.error("Error close connect: ", e); }
+		}
 
 		return getMaxCounter();
 	}
